@@ -5,8 +5,6 @@ t_all g_all = {{0}, {0}, {0}, NULL, NULL, -1, 0, 0, 0, 0, {0}, -5, 0};
 void no_arg()
 {
     printf("Usage:  ft_traceroute [OPTION...] HOST\n");
-    printf("Print the route packets trace to network host.\n");
-    printf("\n  --help\t\tgive this help list\n");
     exit(0);
 }
 
@@ -25,7 +23,7 @@ unsigned short checksum(unsigned short *buf, int len) {
     return (unsigned short)(~sum);
 }
 
-int    recv_packet(int ttl, int write_ip, char *ip_rec, char *last_ip_rec, int i, int finish, struct timeval start_time)
+int    recv_packet(int ttl, int write_ip, char *ip_rec,  int i, int finish, struct timeval start_time)
 {
     struct msghdr recv_msg;
     struct sockaddr_in recv_addr;
@@ -49,33 +47,38 @@ int    recv_packet(int ttl, int write_ip, char *ip_rec, char *last_ip_rec, int i
     g_all.ip  = *(t_ipv4_header*)recv_buffer;
     g_all.icmp_receive = *(t_icmp_header*)(recv_buffer + (g_all.ip.ihl * 4));
     if (i == 0){
-        last_ip_rec = (char *)inet_ntoa(recv_addr.sin_addr);
+        //last_ip_rec = (char *)inet_ntoa(recv_addr.sin_addr);
         printf("%2d  ", ttl);
-        write_ip++;
     } 
     ip_rec = (char *)inet_ntoa(recv_addr.sin_addr);
+    if (ft_strlen(ip_rec) > 5 )
+        write_ip++;
     if (g_all.icmp_receive.type == ICMP_ECHOREPLY)
     {
         finish = 10;
-        if (write_ip == 1 || ft_strncmp(ip_rec, last_ip_rec, ft_strlen(ip_rec) != 0))
+        if (write_ip == 1 )
             printf("%s ",  ip_rec);
+        gettimeofday(&end_time, NULL);
+        double long time_diff = ((end_time.tv_sec - start_time.tv_sec) * 1000000 + (end_time.tv_usec - start_time.tv_usec) / 1000.000);
+        if (time_diff > 500)
+            printf("* ");
+        else
+            printf(" %.3Lf ms ", time_diff);
+        return finish;
     }
     else if (g_all.icmp_receive.type == ICMP_TIMXCEED){
-        if (write_ip == 1 || ft_strncmp(ip_rec, last_ip_rec, ft_strlen(ip_rec) == 0)){
+        if (write_ip == 1 ){
             printf("%s ",  ip_rec);
-            last_ip_rec = ip_rec;
+            //last_ip_rec = ip_rec;
         }
         //printf("%s ",  ip_rec);
     }
     else if (g_all.icmp_receive.type == ICMP_ECHO){
-        if (write_ip == 1 || ft_strncmp(ip_rec, last_ip_rec, ft_strlen(ip_rec) == 0)){
+        if (write_ip == 1 ){
             printf("%s ",  ip_rec);
-            last_ip_rec = ip_rec;
+            //last_ip_rec = ip_rec;
         }
         //printf("%s ",  ip_rec);
-    }
-    else if (g_all.icmp_receive.type == ICMP_REDIRECT_TOSHOST){
-        printf(" * ");
     }
     else
     { 
@@ -85,23 +88,22 @@ int    recv_packet(int ttl, int write_ip, char *ip_rec, char *last_ip_rec, int i
     gettimeofday(&end_time, NULL);
     double long time_diff = ((end_time.tv_sec - start_time.tv_sec) * 1000000 + (end_time.tv_usec - start_time.tv_usec) / 1000.000);
     if (time_diff > 500)
-        printf(" * ");
+        printf("* ");
     else
         printf(" %.3Lf ms ", time_diff);
-    return finish;
+    return write_ip;
 }
 
 void    ft_traceroute(t_icmp_header icmp_header, struct sockaddr_in dest_addr)
 {
     struct timeval  start_time;
     char *ip_rec = "";
-    char *last_ip_rec = "";
+    //char *last_ip_rec = "";
     int ttl = 1;
     int i = 0;
     int write_ip = 0;
     int finish = 0;
     struct timeval timeout = {1, 0};
-
     while (1)
     {
     
@@ -129,16 +131,18 @@ void    ft_traceroute(t_icmp_header icmp_header, struct sockaddr_in dest_addr)
             else if (select_result == 0)
             {
                 // Le délai d'attente pour la fonction select() est écoulé, aucun donnée n'a été reçue
-                if (i == 0){
+                if (i == 0)
                     printf("%2d  ", ttl);
-                } 
-                printf(" * ");
+                printf("* ");    
                 timeout.tv_sec = 1;
                 timeout.tv_usec = 0;
             }
-            else 
-                finish = recv_packet(ttl, write_ip, ip_rec, last_ip_rec, i, finish,  start_time);
-            write_ip++;
+            else{
+                finish = recv_packet(ttl, write_ip, ip_rec, i, finish,  start_time);
+                write_ip++;
+            }
+            // if (i == 0)
+            //     write_ip++;
             i++;
         }
         if (i == 3){
@@ -153,9 +157,25 @@ void    ft_traceroute(t_icmp_header icmp_header, struct sockaddr_in dest_addr)
     return ;
 }
 
+void    traceroute_help()
+{
+    printf("Usage:\n");
+    printf("  ft_traceroute [ -fmn ]\n");
+    printf("Options:\n");
+    printf("  -f first_ttl               Start from the first_ttl hop (instead from 1)\n");
+    printf("  -m max_ttl                 Set the max number of hops (max TTL to be reached). Default is 30\n");
+    printf("  -n                         Do not resolve IP addresses to their domain names\n");
+    exit(0);
+}
 int main(int argc, char **argv) {
-    if (argc > 3 || argc < 2)
+    if (argc < 2)
         no_arg();
+    while (argc > 0)
+    {
+        if (ft_strncmp(delete_space(argv[argc-1]), "--help", ft_strlen(argv[argc-1])) == 0)
+            traceroute_help();
+        argc--;
+    }
     g_all.sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (g_all.sockfd < 0) {
         perror("socket");
