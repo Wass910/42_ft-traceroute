@@ -63,6 +63,12 @@ typedef struct s_all {
     double          avg;
     double          data[100000];
     long int        c_flag;
+    int             sockfd;
 }               t_all;
+
+char        *delete_space(char *chaine);
+int		    ft_strncmp(const char *s1, const char *s2, size_t n);
+int		    ft_strlen(char *s);
+long int	ft_atoi(char *nptr);
 
 #endif
