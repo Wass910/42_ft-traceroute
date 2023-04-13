@@ -1,4 +1,4 @@
-SRC=    srcs/ft_traceroute.c srcs/utils.c\
+SRC=    srcs/ft_traceroute.c srcs/utils.c srcs/getter.c srcs/argument.c srcs/main.c\
 
 OBJS			= $(SRC:.c=.o)
 
@@ -10,7 +10,7 @@ RM				= rm -f
 
 CC				= gcc
 
-%.o : %.cpp
+%.o : %.c
 				$(CC) $(CFLAGS) -c $< -o $@
 
 $(NAME):		$(OBJS)

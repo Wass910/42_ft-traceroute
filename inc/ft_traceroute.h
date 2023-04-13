@@ -54,7 +54,7 @@ typedef struct s_all {
     t_ipv4_header   ip;
     t_icmp_header   icmp_send;
     t_icmp_header   icmp_receive;
-    char            *hostname;
+    char            hostname[16];
     char            *addr;
     int             packet_sent;
     int             packet_receive;
@@ -64,11 +64,27 @@ typedef struct s_all {
     double          data[100000];
     long int        c_flag;
     int             sockfd;
+    int             option_n;
+    int             option_m;
+    int             option_f;
 }               t_all;
 
-char        *delete_space(char *chaine);
-int		    ft_strncmp(const char *s1, const char *s2, size_t n);
-int		    ft_strlen(char *s);
-long int	ft_atoi(char *nptr);
+char            *delete_space(char *chaine);
+int		        ft_strncmp(const char *s1, const char *s2, size_t n);
+int		        ft_strlen(char *s);
+long int	    ft_atoi(char *nptr);
+int             ft_isdigit(char *str);
+void            get_name_adress(char *ip_address);
+void            get_the_adresse(char *hostname);
+void            no_arg();
+void            traceroute_help();
+void            verification_arg(int argc, char **argv);
+int             recv_packet(int ttl, int write_ip, char *ip_rec,  int i, int finish, struct timeval start_time);
+unsigned short  checksum(unsigned short *buf, int len);
+void            ft_traceroute(t_icmp_header icmp_header, struct sockaddr_in dest_addr);
+
+
+
+extern t_all    g_all;
 
 #endif

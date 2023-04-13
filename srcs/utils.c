@@ -13,6 +13,31 @@ int		ft_strncmp(const char *s1, const char *s2, size_t n)
 	return ((unsigned char)*s1 - (unsigned char)*s2);
 }
 
+int		ft_isdigit(char *str)
+{
+    int i = 0;
+	int plus = 0;
+
+    while (str[i])
+    {
+        if ((str[i] < '0' || str[i] > '9') && str[i] != '+')
+            return (1);
+		if (str[i] == '+')
+			plus++;
+        i++;
+    }
+	if (plus > 1)
+		return 1;
+	else if (plus == 1)
+	{
+		if (str[0] == '+')
+			return 0;
+		else 
+			return 1;
+	}
+	return (0);
+}
+
 int		ft_strlen(char *s)
 {
 	int i;
@@ -65,4 +90,18 @@ char *delete_space(char *chaine)
     }
     chaine[j] = '\0';
     return( chaine );
+}
+
+unsigned short checksum(unsigned short *buf, int len) {
+    unsigned long sum = 0;
+    while (len > 1) {
+        sum += *buf++;
+        len -= 2;
+    }
+    if (len == 1) {
+        sum += *(unsigned char*)buf;
+    }
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum += (sum >> 16);
+    return (unsigned short)(~sum);
 }
