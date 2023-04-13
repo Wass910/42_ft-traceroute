@@ -23,11 +23,10 @@ int    recv_packet(int ttl, int write_ip, char *ip_rec,  int i, int finish, stru
     }
     g_all.ip  = *(t_ipv4_header*)recv_buffer;
     g_all.icmp_receive = *(t_icmp_header*)(recv_buffer + (g_all.ip.ihl * 4));
+    //printf(" ttl = %d , f = %d\n", ttl, g_all.option_f);
     if (ttl >= g_all.option_f)
     {
         if (i == 0){
-            //last_ip_rec = (char *)inet_ntoa(recv_addr.sin_addr);
-            
             printf("%2d  ", ttl);
         } 
         ip_rec = (char *)inet_ntoa(recv_addr.sin_addr);
@@ -117,10 +116,13 @@ void    ft_traceroute(t_icmp_header icmp_header, struct sockaddr_in dest_addr)
                 exit(EXIT_FAILURE);
             }
             else if (select_result == 0)
-            {
-                if (i == 0)
-                    printf("%2d  ", ttl);
-                printf("* ");    
+            {   
+                if (ttl >= g_all.option_f)
+                {
+                    if (i == 0)
+                        printf("%2d  ", ttl);
+                    printf("* "); 
+                }   
                 timeout.tv_sec = 0;
                 timeout.tv_usec = 300000;
             }
