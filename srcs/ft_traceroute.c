@@ -18,7 +18,7 @@ int    recv_packet(int ttl, int write_ip, char *ip_rec,  int i, int finish, stru
 
     ssize_t bytes_received = recvmsg(g_all.sockfd, &recv_msg, 0);
     if (bytes_received < 0) {
-        perror("recvmsg");
+        printf("recvmsg error\n");
         exit(1);
     }
     g_all.ip  = *(t_ipv4_header*)recv_buffer;
@@ -95,7 +95,7 @@ void    ft_traceroute(t_icmp_header icmp_header, struct sockaddr_in dest_addr)
         if (ttl == 1)
             printf("traceroute to %s (%s), %d hops max, 60 byte packets\n", g_all.addr, g_all.hostname, g_all.option_m);
         if (setsockopt(g_all.sockfd, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) < 0) {
-            perror("setsockopt");
+            printf("setsockopt error \n");
             exit(1);
         }
         while (i < 3)
@@ -106,13 +106,13 @@ void    ft_traceroute(t_icmp_header icmp_header, struct sockaddr_in dest_addr)
             FD_SET(g_all.sockfd, &read_fds);
             ssize_t bytes_sent = sendto(g_all.sockfd, &icmp_header, ICMP_HDR_SIZE, 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
             if (bytes_sent < 0) {
-                perror("sendto");
+                printf("sendto error\n");
                 exit(1);
             }
             int select_result = select(g_all.sockfd + 1, &read_fds, NULL, NULL, &timeout);
             if (select_result == -1)
             {
-                perror("Erreur lors de l'utilisation de la fonction select()");
+                printf("Select error \n");
                 exit(EXIT_FAILURE);
             }
             else if (select_result == 0)

@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 
     g_all.sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (g_all.sockfd < 0) {
-        perror("socket");
+        printf("socket error\n");
         exit(1);
     }
 
